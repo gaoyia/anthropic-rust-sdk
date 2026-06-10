@@ -8,6 +8,54 @@ An AI-assisted synchronization of the [anthropic-sdk-typescript](https://github.
 
 本项目以官方 TypeScript SDK 为上游参考实现，借助 AI 辅助将 API 定义、类型结构与行为逐步对齐并迁移为 Rust 实现，目标是提供与官方 SDK 能力对等的 Rust 客户端库。
 
+**范围说明：** 仅同步主包 `anthropic-sdk-typescript/src/`；`packages/` 下的云厂商变体（Bedrock、Vertex、AWS、Foundry）不在支持范围内。
+
+## 快速开始
+
+```toml
+[dependencies]
+anthropic-rust-sdk = "0.1"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+```
+
+```rust
+use anthropic::{Anthropic, MessageContent, MessageCreateParams, MessageParam, Role};
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let client = Anthropic::new()?;
+
+    let params = MessageCreateParams::new(
+        "claude-opus-4-6",
+        1024,
+        vec![MessageParam {
+            role: Role::User,
+            content: MessageContent::Text("Hello, Claude".into()),
+        }],
+    );
+
+    if let anthropic::MessageCreateResult::Message(message) =
+        client.messages().create(params).await?
+    {
+        for block in &message.as_ref().content {
+            if let Some(text) = block.text() {
+                println!("{text}");
+            }
+        }
+    }
+
+    Ok(())
+}
+```
+
+设置环境变量 `ANTHROPIC_API_KEY` 后即可运行。更多示例见 `examples/`。
+
+## 文档
+
+- [架构说明](docs/ARCHITECTURE.md)
+- [路线图](docs/ROADMAP.md)
+- [实施计划](.plan/anthropic-rust-sdk.plan.md)
+
 ## 上游依赖
 
 本仓库通过 git submodule 引用官方 TypeScript SDK：

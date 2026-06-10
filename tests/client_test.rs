@@ -1,0 +1,118 @@
+//! 客户端集成测试。
+
+use anthropic::{Anthropic, MessageContent, MessageCreateParams, MessageParam, Role};
+use wiremock::matchers::{header, method, path};
+use wiremock::{Mock, MockServer, ResponseTemplate};
+
+#[tokio::test]
+async fn messages_create_sends_expected_headers() {
+    let server = MockServer::start().await;
+    Mock::given(method("POST"))
+        .and(path("/v1/messages"))
+        .and(header("x-api-key", "test-key"))
+        .and(header("anthropic-version", "2023-06-01"))
+        .respond_with(ResponseTemplate::new(200).set_body_json(serde_json::json!({
+            "id": "msg_01",
+            "type": "message",
+            "role": "assistant",
+            "content": [{"type": "text", "text": "Hi"}],
+            "model": "claude-opus-4-6",
+            "stop_reason": "end_turn",
+            "stop_sequence": null,
+            "usage": {"input_tokens": 10, "output_tokens": 5}
+        })))
+        .mount(&server)
+        .await;
+
+    let client = Anthropic::with_options(anthropic::ClientOptions {
+        api_key: Some("test-key".into()),
+        base_url: Some(server.uri()),
+        ..Default::default()
+    })
+    .unwrap();
+
+    let params = MessageCreateParams::new(
+        "claude-opus-4-6",
+        1024,
+        vec![MessageParam {
+            role: Role::User,
+            content: MessageContent::Text("Hello".into()),
+        }],
+    );
+
+    let result = client.messages().create(params).await.unwrap();
+    match result {
+        anthropic::MessageCreateResult::Message(m) => {
+            assert_eq!(m.content[0].text(), Some("Hi"));
+        }
+        _ => panic!("expected non-streaming message"),
+    }
+}
+
+#[tokio::test]
+async fn maps_401_to_authentication_error() {
+    let server = MockServer::start().await;
+    Mock::given(method("POST"))
+        .and(path("/v1/messages"))
+        .respond_with(ResponseTemplate::new(401).set_body_json(serde_json::json!({
+            "error": {"type": "authentication_error", "message": "invalid x-api-key"}
+        })))
+        .mount(&server)
+        .await;
+
+    let client = Anthropic::with_options(anthropic::ClientOptions {
+        api_key: Some("bad-key".into()),
+        base_url: Some(server.uri()),
+        max_retries: Some(0),
+        ..Default::default()
+    })
+    .unwrap();
+
+    let params = MessageCreateParams::new(
+        "claude-opus-4-6",
+        1024,
+        vec![MessageParam {
+            role: Role::User,
+            content: MessageContent::Text("Hello".into()),
+        }],
+    );
+
+    let result = client.messages().create(params).await;
+    assert!(matches!(result, Err(anthropic::Error::Authentication(_))));
+}
+
+#[tokio::test]
+async fn count_tokens_parses_response() {
+    let server = MockServer::start().await;
+    Mock::given(method("POST"))
+        .and(path("/v1/messages/count_tokens"))
+        .respond_with(ResponseTemplate::new(200).set_body_json(serde_json::json!({
+            "input_tokens": 42
+        })))
+        .mount(&server)
+        .await;
+
+    let client = Anthropic::with_options(anthropic::ClientOptions {
+        api_key: Some("test-key".into()),
+        base_url: Some(server.uri()),
+        ..Default::default()
+    })
+    .unwrap();
+
+    let count = client
+        .messages()
+        .count_tokens(anthropic::MessageCountTokensParams {
+            model: "claude-opus-4-6".into(),
+            messages: vec![MessageParam {
+                role: Role::User,
+                content: MessageContent::Text("Hello".into()),
+            }],
+            system: None,
+            tools: None,
+            extra: serde_json::Value::Null,
+        })
+        .await
+        .unwrap();
+
+    assert_eq!(count.input_tokens, 42);
+}

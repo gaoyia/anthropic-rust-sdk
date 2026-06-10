@@ -1,0 +1,41 @@
+[package]
+name = "anthropic-rust-sdk"
+version = "0.1.0"
+edition = "2021"
+description = "Anthropic Claude API client for Rust, synced from anthropic-sdk-typescript"
+license = "MIT"
+repository = "https://github.com/gaoyia/anthropic-rust-sdk"
+readme = "README.md"
+keywords = ["anthropic", "claude", "ai", "llm", "api"]
+categories = ["api-bindings", "web-programming::http-client"]
+
+[dependencies]
+async-trait = "0.1"
+bytes = "1"
+futures = { version = "0.3", features = ["alloc"] }
+http = "1"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls", "stream"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "1"
+tokio = { version = "1", features = ["sync", "time", "macros", "rt-multi-thread"] }
+uuid = { version = "1", features = ["v4"] }
+hmac = "0.12"
+sha2 = "0.10"
+hex = "0.4"
+
+[dev-dependencies]
+tokio = { version = "1", features = ["full"] }
+wiremock = "0.6"
+
+[lib]
+name = "anthropic"
+path = "src/lib.rs"
+
+[[example]]
+name = "messages_create"
+path = "examples/messages_create.rs"
+
+[[example]]
+name = "streaming"
+path = "examples/streaming.rs"
