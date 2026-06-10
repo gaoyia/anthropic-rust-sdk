@@ -1,6 +1,6 @@
 //! Webhook 验签测试。
 
-use anthropic::helpers::webhooks::unwrap_webhook;
+use anthropic_rust_sdk::helpers::webhooks::unwrap_webhook;
 use hmac::{Hmac, Mac};
 use sha2::Sha256;
 

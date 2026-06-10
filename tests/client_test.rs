@@ -1,6 +1,6 @@
 //! 客户端集成测试。
 
-use anthropic::{Anthropic, MessageContent, MessageCreateParams, MessageParam, Role};
+use anthropic_rust_sdk::{Anthropic, MessageContent, MessageCreateParams, MessageParam, Role};
 use wiremock::matchers::{header, method, path};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
@@ -24,7 +24,7 @@ async fn messages_create_sends_expected_headers() {
         .mount(&server)
         .await;
 
-    let client = Anthropic::with_options(anthropic::ClientOptions {
+    let client = Anthropic::with_options(anthropic_rust_sdk::ClientOptions {
         api_key: Some("test-key".into()),
         base_url: Some(server.uri()),
         ..Default::default()
@@ -42,7 +42,7 @@ async fn messages_create_sends_expected_headers() {
 
     let result = client.messages().create(params).await.unwrap();
     match result {
-        anthropic::MessageCreateResult::Message(m) => {
+        anthropic_rust_sdk::MessageCreateResult::Message(m) => {
             assert_eq!(m.content[0].text(), Some("Hi"));
         }
         _ => panic!("expected non-streaming message"),
@@ -60,7 +60,7 @@ async fn maps_401_to_authentication_error() {
         .mount(&server)
         .await;
 
-    let client = Anthropic::with_options(anthropic::ClientOptions {
+    let client = Anthropic::with_options(anthropic_rust_sdk::ClientOptions {
         api_key: Some("bad-key".into()),
         base_url: Some(server.uri()),
         max_retries: Some(0),
@@ -78,7 +78,7 @@ async fn maps_401_to_authentication_error() {
     );
 
     let result = client.messages().create(params).await;
-    assert!(matches!(result, Err(anthropic::Error::Authentication(_))));
+    assert!(matches!(result, Err(anthropic_rust_sdk::Error::Authentication(_))));
 }
 
 #[tokio::test]
@@ -92,7 +92,7 @@ async fn count_tokens_parses_response() {
         .mount(&server)
         .await;
 
-    let client = Anthropic::with_options(anthropic::ClientOptions {
+    let client = Anthropic::with_options(anthropic_rust_sdk::ClientOptions {
         api_key: Some("test-key".into()),
         base_url: Some(server.uri()),
         ..Default::default()
@@ -101,7 +101,7 @@ async fn count_tokens_parses_response() {
 
     let count = client
         .messages()
-        .count_tokens(anthropic::MessageCountTokensParams {
+        .count_tokens(anthropic_rust_sdk::MessageCountTokensParams {
             model: "claude-opus-4-6".into(),
             messages: vec![MessageParam {
                 role: Role::User,

@@ -4,10 +4,21 @@ version = "0.1.0"
 edition = "2021"
 description = "Anthropic Claude API client for Rust, synced from anthropic-sdk-typescript"
 license = "MIT"
+authors = ["高奕 <gaoyia@live.com>"]
+documentation = "https://docs.rs/anthropic-rust-sdk"
+homepage = "https://github.com/gaoyia/anthropic-rust-sdk"
 repository = "https://github.com/gaoyia/anthropic-rust-sdk"
 readme = "README.md"
 keywords = ["anthropic", "claude", "ai", "llm", "api"]
 categories = ["api-bindings", "web-programming::http-client"]
+# 发布到 crates.io 时排除非 crate 内容
+exclude = [
+    "anthropic-sdk-typescript/",
+    ".cursor/",
+    ".plan/",
+    ".github/",
+    ".gitmodules",
+]
 
 [dependencies]
 async-trait = "0.1"
@@ -29,7 +40,7 @@ tokio = { version = "1", features = ["full"] }
 wiremock = "0.6"
 
 [lib]
-name = "anthropic"
+name = "anthropic_rust_sdk"
 path = "src/lib.rs"
 
 [[example]]

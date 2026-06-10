@@ -19,7 +19,7 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 
 ```rust
-use anthropic::{Anthropic, MessageContent, MessageCreateParams, MessageParam, Role};
+use anthropic_rust_sdk::{Anthropic, MessageContent, MessageCreateParams, MessageParam, Role};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -34,7 +34,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }],
     );
 
-    if let anthropic::MessageCreateResult::Message(message) =
+    if let anthropic_rust_sdk::MessageCreateResult::Message(message) =
         client.messages().create(params).await?
     {
         for block in &message.as_ref().content {
@@ -49,6 +49,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ```
 
 设置环境变量 `ANTHROPIC_API_KEY` 后即可运行。更多示例见 `examples/`。
+
+> **注意：** 本库为社区维护的非官方 SDK，crates.io 包名为 `anthropic-rust-sdk`，代码中通过 `use anthropic_rust_sdk::...` 导入。
 
 ## 文档
 

@@ -1,6 +1,6 @@
 //! SSE 解析测试。
 
-use anthropic::core::streaming::EventStream;
+use anthropic_rust_sdk::core::streaming::EventStream;
 use futures::{stream, StreamExt};
 
 #[tokio::test]

@@ -1,6 +1,6 @@
 //! 流式 Messages API 示例。
 
-use anthropic::{Anthropic, MessageContent, MessageCreateParams, MessageParam, Role};
+use anthropic_rust_sdk::{Anthropic, MessageContent, MessageCreateParams, MessageParam, Role};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
