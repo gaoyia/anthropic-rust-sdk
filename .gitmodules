@@ -1,0 +1,3 @@
+[submodule "anthropic-sdk-typescript"]
+	path = anthropic-sdk-typescript
+	url = https://github.com/anthropics/anthropic-sdk-typescript.git
