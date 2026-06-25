@@ -90,8 +90,11 @@
 - ✅ `code_execution_20260521` 工具、`allowed_callers` 新值、工具新字段（`cache_control` / `defer_loading` / `strict`）：`tools: Vec<Value>` 透传
 - ✅ refusal 新增 `military_weapons` 类别：`ContentBlock.fields: Value` 透传
 
-### 延期（运行时增强，后续逐轮推进）
+### 已对齐（运行时增强）
 
-- 💤 `x-stainless-helper` append 请求头机制
-- 💤 流式惰性 tool JSON 累积解析（对齐上游 `internal/message-stream-utils.ts`）
-- 💤 client 端 fallback middleware（client-side fallbacks）
+- ✅ 流式累积 `MessageStream`：逐事件重建 `final_message`，将 `input_json_delta` 在 `content_block_stop` 解析为工具块 `input`，并合并 `message_delta` 的 `stop_reason` 与 `usage`（对齐上游 `internal/message-stream-utils.ts`）
+
+### 延期（需独立立项，记录原因）
+
+- 💤 `x-stainless-helper` 遥测请求头：上游依赖对象级 `Symbol` 标记收集 helper 来源；Rust 中 `tools` / `messages` 为 `serde_json::Value`，缺少对象级标记载体，且闭集遥测值（MCP / betaZodTool / compaction / environments / session-tool-runner 等）对应的 helper 尚未在 Rust 实现。决定随相关 helper 生态一并引入，避免无调用方的空壳实现（不留技术债）。
+- 💤 client 端 fallback middleware（client-side fallbacks）：`src/core/middleware.rs` 已有中间件链执行框架，但尚未接入 `src/client.rs` 请求链路，且缺少 fallback 模型配置入口与 refusal 重试语义；buffered 中间件与流式请求的兼容需先行设计。属较大特性，须单独立项（架构优先）。
