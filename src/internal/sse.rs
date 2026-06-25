@@ -91,6 +91,7 @@ pub fn is_message_stream_event(event: Option<&str>) -> bool {
                 | "content_block_delta"
                 | "content_block_stop"
                 | "ping"
+                | "system.message"
         )
     ) || event.is_none()
 }

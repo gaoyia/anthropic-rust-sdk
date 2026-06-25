@@ -21,3 +21,15 @@ async fn parses_message_stream_events() {
     let third = events.next().await.unwrap().unwrap();
     assert_eq!(third["type"], "message_stop");
 }
+
+#[tokio::test]
+async fn passes_through_system_message_event() {
+    let raw = "event: system.message\ndata: {\"type\":\"system.message\",\"message\":{\"role\":\"system\",\"content\":\"ctx\"}}\n\n";
+
+    let stream = stream::iter(vec![Ok(bytes::Bytes::from(raw))]);
+    let mut events = EventStream::<serde_json::Value>::new(stream.boxed());
+
+    let event = events.next().await.unwrap().unwrap();
+    assert_eq!(event["type"], "system.message");
+    assert_eq!(event["message"]["role"], "system");
+}
