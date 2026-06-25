@@ -76,7 +76,8 @@ impl Anthropic {
             .or_else(|| std::env::var("ANTHROPIC_API_KEY").ok())
             .ok_or_else(|| {
                 Error::Anthropic(crate::core::error::AnthropicError(
-                    "Missing API key: set ANTHROPIC_API_KEY or pass api_key in ClientOptions".into(),
+                    "Missing API key: set ANTHROPIC_API_KEY or pass api_key in ClientOptions"
+                        .into(),
                 ))
             })?;
 
@@ -143,7 +144,8 @@ impl Anthropic {
     }
 
     pub(crate) async fn get<T: DeserializeOwned>(&self, path: &str) -> Result<T, Error> {
-        self.request(Method::GET, path, None::<&()>, false).await
+        self.request(Method::GET, path, None::<&()>, false, None)
+            .await
     }
 
     pub(crate) async fn get_with_query<T: DeserializeOwned>(
@@ -162,7 +164,7 @@ impl Anthropic {
                 url.push_str(&qs.join("&"));
             }
         }
-        self.request_url(Method::GET, &url, None::<&()>, false)
+        self.request_url(Method::GET, &url, None::<&()>, false, None)
             .await
     }
 
@@ -171,18 +173,36 @@ impl Anthropic {
         T: DeserializeOwned,
         B: Serialize + ?Sized,
     {
-        self.request(Method::POST, path, Some(body), false).await
+        self.request(Method::POST, path, Some(body), false, None)
+            .await
     }
 
-    pub(crate) async fn post_streaming<B>(
+    /// POST 请求并附加额外请求头（如 `anthropic-user-profile-id`）。
+    pub(crate) async fn post_with_headers<T, B>(
         &self,
         path: &str,
         body: &B,
+        extra_headers: Option<&HashMap<String, String>>,
+    ) -> Result<T, Error>
+    where
+        T: DeserializeOwned,
+        B: Serialize + ?Sized,
+    {
+        self.request(Method::POST, path, Some(body), false, extra_headers)
+            .await
+    }
+
+    /// 流式 POST 请求并附加额外请求头。
+    pub(crate) async fn post_streaming_with_headers<B>(
+        &self,
+        path: &str,
+        body: &B,
+        extra_headers: Option<&HashMap<String, String>>,
     ) -> Result<Response, Error>
     where
         B: Serialize + ?Sized,
     {
-        self.request_raw(Method::POST, path, Some(body), true)
+        self.request_raw(Method::POST, path, Some(body), true, extra_headers)
             .await
     }
 
@@ -190,7 +210,8 @@ impl Anthropic {
     where
         T: DeserializeOwned,
     {
-        self.request(Method::POST, path, None::<&()>, false).await
+        self.request(Method::POST, path, None::<&()>, false, None)
+            .await
     }
 
     #[allow(dead_code)]
@@ -198,7 +219,8 @@ impl Anthropic {
     where
         T: DeserializeOwned,
     {
-        self.request(Method::DELETE, path, None::<&()>, false).await
+        self.request(Method::DELETE, path, None::<&()>, false, None)
+            .await
     }
 
     #[allow(dead_code)]
@@ -207,7 +229,8 @@ impl Anthropic {
         T: DeserializeOwned,
         B: Serialize + ?Sized,
     {
-        self.request(Method::PATCH, path, Some(body), false).await
+        self.request(Method::PATCH, path, Some(body), false, None)
+            .await
     }
 
     pub(crate) async fn get_beta<T>(
@@ -219,8 +242,16 @@ impl Anthropic {
     where
         T: DeserializeOwned,
     {
-        self.request_beta(Method::GET, path, None::<&()>, beta_headers, query, false)
-            .await
+        self.request_beta(
+            Method::GET,
+            path,
+            None::<&()>,
+            beta_headers,
+            query,
+            false,
+            None,
+        )
+        .await
     }
 
     pub(crate) async fn post_beta<T, B>(
@@ -233,8 +264,40 @@ impl Anthropic {
         T: DeserializeOwned,
         B: Serialize + ?Sized,
     {
-        self.request_beta(Method::POST, path, Some(body), beta_headers, None, false)
-            .await
+        self.request_beta(
+            Method::POST,
+            path,
+            Some(body),
+            beta_headers,
+            None,
+            false,
+            None,
+        )
+        .await
+    }
+
+    /// Beta POST 请求并附加额外请求头（如 `anthropic-user-profile-id`）。
+    pub(crate) async fn post_beta_with_headers<T, B>(
+        &self,
+        path: &str,
+        body: &B,
+        beta_headers: &[String],
+        additional_headers: Option<&HashMap<String, String>>,
+    ) -> Result<T, Error>
+    where
+        T: DeserializeOwned,
+        B: Serialize + ?Sized,
+    {
+        self.request_beta(
+            Method::POST,
+            path,
+            Some(body),
+            beta_headers,
+            None,
+            false,
+            additional_headers,
+        )
+        .await
     }
 
     pub(crate) async fn delete_beta<T>(
@@ -252,10 +315,12 @@ impl Anthropic {
             beta_headers,
             None,
             false,
+            None,
         )
         .await
     }
 
+    #[allow(clippy::too_many_arguments)]
     async fn request_beta<T, B>(
         &self,
         method: Method,
@@ -264,6 +329,7 @@ impl Anthropic {
         beta_headers: &[String],
         query: Option<&[(&str, &str)]>,
         stream: bool,
+        additional_headers: Option<&HashMap<String, String>>,
     ) -> Result<T, Error>
     where
         T: DeserializeOwned,
@@ -272,6 +338,11 @@ impl Anthropic {
         let mut extra_headers = self.default_headers.clone();
         if !beta_headers.is_empty() {
             extra_headers.insert("anthropic-beta".to_string(), beta_headers.join(","));
+        }
+        if let Some(additional) = additional_headers {
+            for (k, v) in additional {
+                extra_headers.insert(k.clone(), v.clone());
+            }
         }
         let url = self.build_url(path);
         let mut full_url = url;
@@ -287,7 +358,14 @@ impl Anthropic {
         }
 
         let response = self
-            .make_request_with_retries_beta(method, &full_url, body, stream, self.max_retries, &extra_headers)
+            .make_request_with_retries_beta(
+                method,
+                &full_url,
+                body,
+                stream,
+                self.max_retries,
+                &extra_headers,
+            )
             .await?;
         let status = response.status().as_u16();
         let headers = response.headers().clone();
@@ -383,13 +461,14 @@ impl Anthropic {
         path: &str,
         body: Option<&B>,
         stream: bool,
+        extra_headers: Option<&HashMap<String, String>>,
     ) -> Result<T, Error>
     where
         T: DeserializeOwned,
         B: Serialize + ?Sized,
     {
         let response = self
-            .request_raw(method.clone(), path, body, stream)
+            .request_raw(method.clone(), path, body, stream, extra_headers)
             .await?;
         let status = response.status().as_u16();
         let headers = response.headers().clone();
@@ -423,13 +502,14 @@ impl Anthropic {
         url: &str,
         body: Option<&B>,
         stream: bool,
+        extra_headers: Option<&HashMap<String, String>>,
     ) -> Result<T, Error>
     where
         T: DeserializeOwned,
         B: Serialize + ?Sized,
     {
         let response = self
-            .make_request_with_retries(method, url, body, stream, self.max_retries)
+            .make_request_with_retries(method, url, body, stream, self.max_retries, extra_headers)
             .await?;
         let status = response.status().as_u16();
         let headers = response.headers().clone();
@@ -463,12 +543,13 @@ impl Anthropic {
         path: &str,
         body: Option<&B>,
         stream: bool,
+        extra_headers: Option<&HashMap<String, String>>,
     ) -> Result<Response, Error>
     where
         B: Serialize + ?Sized,
     {
         let url = self.build_url(path);
-        self.make_request_with_retries(method, &url, body, stream, self.max_retries)
+        self.make_request_with_retries(method, &url, body, stream, self.max_retries, extra_headers)
             .await
     }
 
@@ -479,10 +560,7 @@ impl Anthropic {
     fn build_headers(&self, stream: bool) -> Result<HeaderMap, Error> {
         let mut headers = default_headers(&self.api_key);
         if let Some(token) = &self.auth_token {
-            headers.insert(
-                "authorization",
-                format!("Bearer {token}").parse().unwrap(),
-            );
+            headers.insert("authorization", format!("Bearer {token}").parse().unwrap());
         }
         if stream {
             headers.insert("accept", "text/event-stream".parse().unwrap());
@@ -501,12 +579,16 @@ impl Anthropic {
         body: Option<&B>,
         stream: bool,
         mut retries_remaining: u32,
+        extra_headers: Option<&HashMap<String, String>>,
     ) -> Result<Response, Error>
     where
         B: Serialize + ?Sized,
     {
         loop {
-            let headers = self.build_headers(stream)?;
+            let mut headers = self.build_headers(stream)?;
+            if let Some(extra) = extra_headers {
+                merge_headers(&mut headers, extra);
+            }
             let mut req = self.http.request(method.clone(), url).headers(headers);
 
             if let Some(b) = body {

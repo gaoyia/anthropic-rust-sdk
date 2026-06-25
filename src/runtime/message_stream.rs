@@ -34,9 +34,11 @@ impl<'a> MessageStream<'a> {
 
     /// 返回底层事件流。
     pub async fn events(&self) -> Result<EventStream<RawMessageStreamEvent>, Error> {
+        let headers =
+            crate::resources::messages::user_profile_headers(&self.params.user_profile_id);
         let response = self
             .client
-            .post_streaming("/v1/messages", &self.params)
+            .post_streaming_with_headers("/v1/messages", &self.params, headers.as_ref())
             .await?;
         let byte_stream = response.bytes_stream().boxed();
         Ok(EventStream::new(byte_stream))

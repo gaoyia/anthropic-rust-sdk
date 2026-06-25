@@ -21,14 +21,14 @@ impl<'a> BetaMessages<'a> {
     }
 
     pub async fn create(&self, params: MessageCreateParams) -> Result<Message, Error> {
-        let mut body = serde_json::to_value(&params).map_err(|e| {
-            crate::core::error::AnthropicError(format!("serialize error: {e}"))
-        })?;
+        let headers = crate::resources::messages::user_profile_headers(&params.user_profile_id);
+        let mut body = serde_json::to_value(&params)
+            .map_err(|e| crate::core::error::AnthropicError(format!("serialize error: {e}")))?;
         if let Value::Object(ref mut map) = body {
             map.insert("stream".to_string(), Value::Bool(false));
         }
         self.client
-            .post_beta("/v1/messages", &body, &self.beta_headers)
+            .post_beta_with_headers("/v1/messages", &body, &self.beta_headers, headers.as_ref())
             .await
     }
 
@@ -36,8 +36,14 @@ impl<'a> BetaMessages<'a> {
         &self,
         params: MessageCountTokensParams,
     ) -> Result<MessageTokensCount, Error> {
+        let headers = crate::resources::messages::user_profile_headers(&params.user_profile_id);
         self.client
-            .post_beta("/v1/messages/count_tokens", &params, &self.beta_headers)
+            .post_beta_with_headers(
+                "/v1/messages/count_tokens",
+                &params,
+                &self.beta_headers,
+                headers.as_ref(),
+            )
             .await
     }
 }

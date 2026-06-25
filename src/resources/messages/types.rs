@@ -164,6 +164,9 @@ pub struct MessageCreateParams {
     pub thinking: Option<Value>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub output_config: Option<Value>,
+    /// 用户档案 ID，作为 `anthropic-user-profile-id` 请求头发送，不写入请求体。
+    #[serde(default, skip_serializing)]
+    pub user_profile_id: Option<String>,
     #[serde(flatten)]
     pub extra: Value,
 }
@@ -185,6 +188,7 @@ impl MessageCreateParams {
             tool_choice: None,
             thinking: None,
             output_config: None,
+            user_profile_id: None,
             extra: Value::Null,
         }
     }
@@ -204,6 +208,9 @@ pub struct MessageCountTokensParams {
     pub system: Option<MessageContent>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tools: Option<Vec<Value>>,
+    /// 用户档案 ID，作为 `anthropic-user-profile-id` 请求头发送，不写入请求体。
+    #[serde(default, skip_serializing)]
+    pub user_profile_id: Option<String>,
     #[serde(flatten)]
     pub extra: Value,
 }

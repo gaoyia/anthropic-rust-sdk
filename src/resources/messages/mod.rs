@@ -6,9 +6,23 @@ use crate::core::error::Error;
 use crate::core::streaming::EventStream;
 use crate::runtime::message_stream::MessageStream;
 use futures::StreamExt;
+use std::collections::HashMap;
 
 pub use batches::*;
 pub use types::*;
+
+/// 将 `user_profile_id` 转换为 `anthropic-user-profile-id` 请求头映射。
+///
+/// 返回 `None` 表示无需附加该请求头。
+pub(crate) fn user_profile_headers(
+    user_profile_id: &Option<String>,
+) -> Option<HashMap<String, String>> {
+    user_profile_id.as_ref().map(|id| {
+        let mut headers = HashMap::new();
+        headers.insert("anthropic-user-profile-id".to_string(), id.clone());
+        headers
+    })
+}
 
 /// Messages API 资源。
 pub struct Messages<'a> {
@@ -27,9 +41,13 @@ impl<'a> Messages<'a> {
 
     /// 创建消息（非流式或流式）。
     pub async fn create(&self, params: MessageCreateParams) -> Result<MessageCreateResult, Error> {
+        let headers = user_profile_headers(&params.user_profile_id);
         let stream = params.stream.unwrap_or(false);
         if stream {
-            let response = self.client.post_streaming("/v1/messages", &params).await?;
+            let response = self
+                .client
+                .post_streaming_with_headers("/v1/messages", &params, headers.as_ref())
+                .await?;
             let byte_stream = response.bytes_stream().boxed();
             let event_stream = EventStream::<RawMessageStreamEvent>::new(byte_stream);
             return Ok(MessageCreateResult::Stream(event_stream));
@@ -37,7 +55,10 @@ impl<'a> Messages<'a> {
 
         let mut non_streaming = params;
         non_streaming.stream = Some(false);
-        let message: Message = self.client.post("/v1/messages", &non_streaming).await?;
+        let message: Message = self
+            .client
+            .post_with_headers("/v1/messages", &non_streaming, headers.as_ref())
+            .await?;
         Ok(MessageCreateResult::Message(Box::new(message)))
     }
 
@@ -46,8 +67,9 @@ impl<'a> Messages<'a> {
         &self,
         params: MessageCountTokensParams,
     ) -> Result<MessageTokensCount, Error> {
+        let headers = user_profile_headers(&params.user_profile_id);
         self.client
-            .post("/v1/messages/count_tokens", &params)
+            .post_with_headers("/v1/messages/count_tokens", &params, headers.as_ref())
             .await
     }
 
