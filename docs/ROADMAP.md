@@ -73,3 +73,25 @@
 - ✅ `BetaToolRunner` 工具循环骨架
 - ✅ Webhook `unwrap` 验签
 - ✅ Middleware 钩子
+
+## 上游同步：0.104.2 → 0.106.0
+
+子模块 `anthropic-sdk-typescript` 已对标 `sdk-v0.106.0`。本轮变更逐项对照如下。
+
+### 已对齐（行为层改动）
+
+- ✅ `user_profile_id` 抽取为 `anthropic-user-profile-id` 请求头（`messages` 与 `beta.messages` 的 create / count_tokens 及流式），不写入请求体
+- ✅ 透传 `system.message` 流式事件（加入 SSE 事件白名单）
+- ✅ 子模块指针与文档参考版本更新至 0.106.0
+
+### 开放结构自动兼容（无需改动）
+
+- ✅ 退役模型移除与新增模型：`model: String` 自由透传
+- ✅ `code_execution_20260521` 工具、`allowed_callers` 新值、工具新字段（`cache_control` / `defer_loading` / `strict`）：`tools: Vec<Value>` 透传
+- ✅ refusal 新增 `military_weapons` 类别：`ContentBlock.fields: Value` 透传
+
+### 延期（运行时增强，后续逐轮推进）
+
+- 💤 `x-stainless-helper` append 请求头机制
+- 💤 流式惰性 tool JSON 累积解析（对齐上游 `internal/message-stream-utils.ts`）
+- 💤 client 端 fallback middleware（client-side fallbacks）

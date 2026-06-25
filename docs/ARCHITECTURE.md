@@ -75,4 +75,7 @@ flowchart TB
 
 ## 版本
 
-SDK 版本与上游 TypeScript SDK 参考版本：`0.104.1`（见 `anthropic-sdk-typescript/src/version.ts`）。
+- 上游 TypeScript SDK 参考版本：`0.106.0`（见 `anthropic-sdk-typescript/src/version.ts`）。
+- 本 crate 版本：见 [`Cargo.toml`](../Cargo.toml)（当前 `0.1.0`），与上游版本独立演进。
+
+上游同步的逐项对照见 [`docs/ROADMAP.md`](ROADMAP.md) 的「上游同步」小节。
