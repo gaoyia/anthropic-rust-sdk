@@ -40,11 +40,7 @@ impl<'a> BetaAgents<'a> {
 
     pub async fn retrieve(&self, agent_id: &str) -> Result<BetaAgent, Error> {
         self.client
-            .get_beta(
-                &format!("/v1/agents/{agent_id}"),
-                &self.beta_headers,
-                None,
-            )
+            .get_beta(&format!("/v1/agents/{agent_id}"), &self.beta_headers, None)
             .await
     }
 }

@@ -1,7 +1,7 @@
 //! 流式响应封装。
 
 use crate::core::error::Error;
-use crate::internal::sse::{is_message_stream_event, parse_sse_json, SseDecoder, ServerSentEvent};
+use crate::internal::sse::{is_message_stream_event, parse_sse_json, ServerSentEvent, SseDecoder};
 use bytes::Bytes;
 use futures::Stream;
 use std::pin::Pin;

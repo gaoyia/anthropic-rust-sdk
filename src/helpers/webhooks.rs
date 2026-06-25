@@ -28,9 +28,9 @@ pub fn unwrap_webhook(
     let signature = header_value(headers, "webhook-signature")
         .ok_or_else(|| AnthropicError("missing webhook-signature header".into()))?;
 
-    let ts: i64 = timestamp.parse().map_err(|_| {
-        AnthropicError("invalid webhook-timestamp".into())
-    })?;
+    let ts: i64 = timestamp
+        .parse()
+        .map_err(|_| AnthropicError("invalid webhook-timestamp".into()))?;
 
     let now = SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -43,9 +43,8 @@ pub fn unwrap_webhook(
     let signed_content = format!("{msg_id}.{timestamp}.{payload}");
     verify_signature(&signed_content, secret, &signature)?;
 
-    let value: Value = serde_json::from_str(payload).map_err(|e| {
-        AnthropicError(format!("invalid webhook JSON payload: {e}"))
-    })?;
+    let value: Value = serde_json::from_str(payload)
+        .map_err(|e| AnthropicError(format!("invalid webhook JSON payload: {e}")))?;
 
     Ok(UnwrapWebhookResult {
         payload: value,
@@ -60,17 +59,19 @@ fn header_value(headers: &[(String, String)], name: &str) -> Option<String> {
         .map(|(_, v)| v.clone())
 }
 
-fn verify_signature(signed_content: &str, secret: &str, signature_header: &str) -> Result<(), Error> {
+fn verify_signature(
+    signed_content: &str,
+    secret: &str,
+    signature_header: &str,
+) -> Result<(), Error> {
     for part in signature_header.split(' ') {
         if let Some(hex) = part.strip_prefix("v1,") {
-            let mut mac = HmacSha256::new_from_slice(secret.as_bytes()).map_err(|e| {
-                AnthropicError(format!("invalid webhook secret: {e}"))
-            })?;
+            let mut mac = HmacSha256::new_from_slice(secret.as_bytes())
+                .map_err(|e| AnthropicError(format!("invalid webhook secret: {e}")))?;
             mac.update(signed_content.as_bytes());
             let expected = mac.finalize().into_bytes();
-            let provided = hex::decode(hex).map_err(|e| {
-                AnthropicError(format!("invalid webhook signature encoding: {e}"))
-            })?;
+            let provided = hex::decode(hex)
+                .map_err(|e| AnthropicError(format!("invalid webhook signature encoding: {e}")))?;
             if expected.as_slice() == provided.as_slice() {
                 return Ok(());
             }

@@ -19,10 +19,7 @@ fn unwrap_valid_webhook() {
     let headers = vec![
         ("webhook-id".to_string(), msg_id.to_string()),
         ("webhook-timestamp".to_string(), timestamp.to_string()),
-        (
-            "webhook-signature".to_string(),
-            format!("v1,{sig}"),
-        ),
+        ("webhook-signature".to_string(), format!("v1,{sig}")),
     ];
 
     // 时间戳校验会失败（过期），此处仅验证签名格式解析路径

@@ -42,11 +42,7 @@ impl<'a> BetaSkills<'a> {
 
     pub async fn retrieve(&self, skill_id: &str) -> Result<BetaSkill, Error> {
         self.client
-            .get_beta(
-                &format!("/v1/skills/{skill_id}"),
-                &self.beta_headers,
-                None,
-            )
+            .get_beta(&format!("/v1/skills/{skill_id}"), &self.beta_headers, None)
             .await
     }
 }

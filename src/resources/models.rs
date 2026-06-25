@@ -36,8 +36,6 @@ impl<'a> Models<'a> {
     }
 
     pub async fn retrieve(&self, model_id: &str) -> Result<ModelInfo, Error> {
-        self.client
-            .get(&format!("/v1/models/{model_id}"))
-            .await
+        self.client.get(&format!("/v1/models/{model_id}")).await
     }
 }

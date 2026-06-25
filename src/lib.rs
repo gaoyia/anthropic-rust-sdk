@@ -6,8 +6,8 @@ pub mod client;
 pub mod core;
 pub mod helpers;
 pub mod internal;
-pub mod runtime;
 pub mod resources;
+pub mod runtime;
 
 pub use client::{Anthropic, ClientOptions, AI_PROMPT, HUMAN_PROMPT};
 pub use core::error::*;
@@ -15,5 +15,5 @@ pub use core::middleware::*;
 pub use core::pagination::*;
 pub use core::streaming::*;
 pub use helpers::*;
-pub use runtime::*;
 pub use resources::*;
+pub use runtime::*;

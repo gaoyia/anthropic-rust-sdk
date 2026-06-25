@@ -13,18 +13,9 @@ pub fn default_headers(api_key: &str) -> HeaderMap {
         "user-agent",
         format!("anthropic-rust-sdk/{SDK_VERSION}").parse().unwrap(),
     );
-    headers.insert(
-        "x-stainless-lang",
-        "rust".parse().unwrap(),
-    );
-    headers.insert(
-        "x-stainless-package-version",
-        SDK_VERSION.parse().unwrap(),
-    );
-    headers.insert(
-        "x-stainless-runtime",
-        "tokio".parse().unwrap(),
-    );
+    headers.insert("x-stainless-lang", "rust".parse().unwrap());
+    headers.insert("x-stainless-package-version", SDK_VERSION.parse().unwrap());
+    headers.insert("x-stainless-runtime", "tokio".parse().unwrap());
     headers
 }
 

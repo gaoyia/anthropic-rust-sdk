@@ -227,12 +227,7 @@ mod tests {
 
     #[test]
     fn maps_401_to_authentication() {
-        let err = ApiError::generate(
-            Some(401),
-            serde_json::json!({}),
-            None,
-            HeaderMap::new(),
-        );
+        let err = ApiError::generate(Some(401), serde_json::json!({}), None, HeaderMap::new());
         assert!(matches!(err, Error::Authentication(_)));
     }
 }

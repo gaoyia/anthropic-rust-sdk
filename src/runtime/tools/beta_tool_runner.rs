@@ -9,9 +9,8 @@ use std::future::Future;
 use std::pin::Pin;
 
 /// 可运行工具处理器。
-pub type ToolHandler = Box<
-    dyn Fn(Value) -> Pin<Box<dyn Future<Output = Result<Value, Error>> + Send>> + Send + Sync,
->;
+pub type ToolHandler =
+    Box<dyn Fn(Value) -> Pin<Box<dyn Future<Output = Result<Value, Error>> + Send>> + Send + Sync>;
 
 /// Beta 工具循环执行器。
 pub struct BetaToolRunner<'a> {
@@ -53,12 +52,7 @@ impl<'a> BetaToolRunner<'a> {
                 .into());
             }
 
-            let message = match self
-                .client
-                .messages()
-                .create(self.params.clone())
-                .await?
-            {
+            let message = match self.client.messages().create(self.params.clone()).await? {
                 crate::resources::messages::MessageCreateResult::Message(m) => *m,
                 crate::resources::messages::MessageCreateResult::Stream(_) => {
                     return Err(crate::core::error::AnthropicError(
@@ -68,7 +62,9 @@ impl<'a> BetaToolRunner<'a> {
                 }
             };
 
-            if message.stop_reason.as_ref() != Some(&crate::resources::messages::StopReason::ToolUse) {
+            if message.stop_reason.as_ref()
+                != Some(&crate::resources::messages::StopReason::ToolUse)
+            {
                 return Ok(message);
             }
 
