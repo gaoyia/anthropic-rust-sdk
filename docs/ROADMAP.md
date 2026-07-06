@@ -104,7 +104,7 @@
 上游无对应版本号，本轮为 Rust 侧运行时增强（发布于 crates.io `0.106.1`）。
 
 - ✅ 分页兼容网关省略字段：`PageCursor` / `TokenPage` 对 `has_more` 等缺失字段使用默认值反序列化，并补充测试（[src/core/pagination.rs](../src/core/pagination.rs)）
-- ✅ `ModelInfo` 补充字段默认值与有效展示名逻辑，并补充反序列化测试（[src/resources/models.rs](../src/resources/models.rs)）
+- ✅ `ModelInfo` 字段默认值、`display_name` 接受 `name` 别名、新增 `effective_display_name()`（缺失时回退 `id`），并补充反序列化测试（[src/resources/models.rs](../src/resources/models.rs)）
 
 ## 上游同步：0.107.0 → 0.110.0
 

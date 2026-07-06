@@ -76,6 +76,12 @@ flowchart TB
 ## 版本
 
 - 上游 TypeScript SDK 参考版本：`0.110.0`（见 `anthropic-sdk-typescript/src/version.ts`）。
-- 本 crate 版本：`0.110.0`（见 [`Cargo.toml`](../Cargo.toml)），与上游 TypeScript SDK 版本保持一致。
+- 本 crate 版本：`0.110.0`（见 [`Cargo.toml`](../Cargo.toml)）。
+
+### 版本策略
+
+- 主次版本（`major.minor`）与上游 `anthropic-sdk-typescript` 对齐，标示已同步到的上游能力基线。
+- patch 版本（第三位）由 Rust 侧自主管理，用于上游同一主次版本内的缺陷修复，以及针对第三方 Anthropic 兼容网关（如智谱 GLM）的健壮性增强。
+- 因此本 crate 的 patch 位可能与上游不同（例如上游 `0.106.0` 对应 Rust `0.106.1`）。已发布版本不可变更，修复只能通过递增 patch 发布新版本。
 
 上游同步的逐项对照见 [`docs/ROADMAP.md`](ROADMAP.md) 的「上游同步」小节。
