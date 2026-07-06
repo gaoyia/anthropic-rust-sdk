@@ -1,6 +1,6 @@
 [package]
 name = "anthropic-rust-sdk"
-version = "0.110.0"
+version = "0.110.1"
 edition = "2021"
 description = "Anthropic Claude API client for Rust, synced from anthropic-sdk-typescript"
 license = "MIT"

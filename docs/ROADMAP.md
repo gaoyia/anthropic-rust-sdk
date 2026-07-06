@@ -127,6 +127,8 @@
 - ✅ Managed Agents 类型扩展（agents / deployments / sessions / vaults / webhooks 等，`0.109.0`）：beta 资源以 `Value` 透传
 - ✅ refusal 移除 `military_weapons` 类别、`0.109.1` 移除若干无功能类型：`ContentBlock.fields: Value` 与开放结构透传
 
-### 延期（需独立立项，记录原因）
+## Rust 独立增强：0.110.1
 
-- 💤 双向游标分页 `BidirectionalPageCursor`（reverse pagination，上游 `0.109.0`）：Rust 各 list 端点均返回 `PageCursor<T>`，尚无使用反向翻页的端点调用方；且 `PageCursor` 的 `#[serde(flatten)] extra: Value` 已能容纳 `prev_page` 字段而不破坏反序列化。为避免无调用方的空壳实现（不留技术债），随相关端点一并引入。
+上游无对应版本号，本轮为 Rust 侧运行时增强（发布于 crates.io `0.110.1`）。
+
+- ✅ `PageCursor<T>` 增加显式 `prev_page` 字段与 `has_prev_page()`，对齐上游 `BidirectionalPageCursor` 的数据能力（上游 `0.109.0`，仅 beta sessions 端点返回）；此前 `prev_page` 仅经 `#[serde(flatten)] extra` 透传，现提升为一等字段并补充反序列化测试（[src/core/pagination.rs](../src/core/pagination.rs)）
