@@ -98,3 +98,35 @@
 
 - 💤 `x-stainless-helper` 遥测请求头：上游依赖对象级 `Symbol` 标记收集 helper 来源；Rust 中 `tools` / `messages` 为 `serde_json::Value`，缺少对象级标记载体，且闭集遥测值（MCP / betaZodTool / compaction / environments / session-tool-runner 等）对应的 helper 尚未在 Rust 实现。决定随相关 helper 生态一并引入，避免无调用方的空壳实现（不留技术债）。
 - 💤 client 端 fallback middleware（client-side fallbacks）：`src/core/middleware.rs` 已有中间件链执行框架，但尚未接入 `src/client.rs` 请求链路，且缺少 fallback 模型配置入口与 refusal 重试语义；buffered 中间件与流式请求的兼容需先行设计。属较大特性，须单独立项（架构优先）。
+
+## Rust 独立增强：0.106.1
+
+上游无对应版本号，本轮为 Rust 侧运行时增强（发布于 crates.io `0.106.1`）。
+
+- ✅ 分页兼容网关省略字段：`PageCursor` / `TokenPage` 对 `has_more` 等缺失字段使用默认值反序列化，并补充测试（[src/core/pagination.rs](../src/core/pagination.rs)）
+- ✅ `ModelInfo` 补充字段默认值与有效展示名逻辑，并补充反序列化测试（[src/resources/models.rs](../src/resources/models.rs)）
+
+## 上游同步：0.107.0 → 0.110.0
+
+子模块 `anthropic-sdk-typescript` 已对标 `sdk-v0.110.0`。本轮变更逐项对照如下。
+
+### 已对齐（行为层改动）
+
+- ✅ 透传 Managed Agents 事件流 `event_start` / `event_delta`（加入 SSE 事件白名单，对齐上游 `0.109.0`）
+- ✅ 子模块指针与文档参考版本更新至 0.110.0
+
+### 已提前对齐（历史轮次已实现）
+
+- ✅ count_tokens 的 `user_profile_id` 抽取为 `anthropic-user-profile-id` 请求头（上游 `0.107.0`）：`messages` 与 `beta.messages` 的 count_tokens 已在 0.106.0 轮次实现
+
+### 开放结构自动兼容（无需改动）
+
+- ✅ 新工具 `web_fetch_20260318` / `web_search_20260318`（`0.107.0`）：`tools: Vec<Value>` 透传
+- ✅ 新模型 `claude-sonnet-5`（`0.108.0`）：`model: String` 透传
+- ✅ 新 beta 请求头值 `agent-memory-2026-07-22`（`0.110.0`）：`Anthropic-Beta` 字符串透传
+- ✅ Managed Agents 类型扩展（agents / deployments / sessions / vaults / webhooks 等，`0.109.0`）：beta 资源以 `Value` 透传
+- ✅ refusal 移除 `military_weapons` 类别、`0.109.1` 移除若干无功能类型：`ContentBlock.fields: Value` 与开放结构透传
+
+### 延期（需独立立项，记录原因）
+
+- 💤 双向游标分页 `BidirectionalPageCursor`（reverse pagination，上游 `0.109.0`）：Rust 各 list 端点均返回 `PageCursor<T>`，尚无使用反向翻页的端点调用方；且 `PageCursor` 的 `#[serde(flatten)] extra: Value` 已能容纳 `prev_page` 字段而不破坏反序列化。为避免无调用方的空壳实现（不留技术债），随相关端点一并引入。
