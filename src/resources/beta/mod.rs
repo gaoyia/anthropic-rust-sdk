@@ -3,6 +3,7 @@
 mod agents;
 mod deployment_runs;
 mod deployments;
+mod dreams;
 mod environments;
 mod files;
 mod memory_stores;
@@ -10,6 +11,7 @@ mod messages;
 mod models;
 mod sessions;
 mod skills;
+mod tunnels;
 mod user_profiles;
 mod vaults;
 mod webhooks;
@@ -19,6 +21,7 @@ use crate::client::Anthropic;
 pub use agents::*;
 pub use deployment_runs::*;
 pub use deployments::*;
+pub use dreams::*;
 pub use environments::*;
 pub use files::*;
 pub use memory_stores::*;
@@ -26,6 +29,7 @@ pub use messages::*;
 pub use models::*;
 pub use sessions::*;
 pub use skills::*;
+pub use tunnels::*;
 pub use user_profiles::*;
 pub use vaults::*;
 pub use webhooks::*;
@@ -36,6 +40,9 @@ pub mod anthropic_beta {
     pub const PROMPT_CACHING: &str = "prompt-caching-2024-07-31";
     pub const FILES_API: &str = "files-api-2025-04-14";
     pub const CODE_EXECUTION: &str = "code-execution-2025-08-25";
+    pub const AGENT_MEMORY: &str = "agent-memory-2026-07-22";
+    pub const DREAMING: &str = "dreaming-2026-04-21";
+    pub const MCP_TUNNELS: &str = "mcp-tunnels-2026-06-22";
 }
 
 /// Beta API entry point.
@@ -108,5 +115,13 @@ impl<'a> Beta<'a> {
 
     pub fn user_profiles(&self) -> BetaUserProfiles<'a> {
         BetaUserProfiles::new(self.client, self.beta_headers.clone())
+    }
+
+    pub fn dreams(&self) -> BetaDreams<'a> {
+        BetaDreams::new(self.client, self.beta_headers.clone())
+    }
+
+    pub fn tunnels(&self) -> BetaTunnels<'a> {
+        BetaTunnels::new(self.client, self.beta_headers.clone())
     }
 }
