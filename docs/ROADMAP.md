@@ -132,3 +132,25 @@
 上游无对应版本号，本轮为 Rust 侧运行时增强（发布于 crates.io `0.110.1`）。
 
 - ✅ `PageCursor<T>` 增加显式 `prev_page` 字段与 `has_prev_page()`，对齐上游 `BidirectionalPageCursor` 的数据能力（上游 `0.109.0`，仅 beta sessions 端点返回）；此前 `prev_page` 仅经 `#[serde(flatten)] extra` 透传，现提升为一等字段并补充反序列化测试（[src/core/pagination.rs](../src/core/pagination.rs)）
+
+## 上游同步：0.111.0 → 0.112.3
+
+子模块 `anthropic-sdk-typescript` 已对标 `sdk-v0.112.3`。本轮变更逐项对照如下。
+
+### 已对齐（新增 beta 资源）
+
+- ✅ 新增 `dreams` beta 资源（dreaming，上游 `0.111.0`）：create / retrieve / list / archive / cancel（[src/resources/beta/dreams.rs](../src/resources/beta/dreams.rs)），补充 `dreaming-2026-04-21` 常量
+- ✅ 新增 `tunnels` beta 资源（MCP Tunnels，上游 `0.112.0`）：create / retrieve / list / archive / reveal_token / rotate_token（[src/resources/beta/tunnels.rs](../src/resources/beta/tunnels.rs)），补充 `mcp-tunnels-2026-06-22` 常量
+- ✅ 新增 `tunnels.certificates` 子资源：create / retrieve / list / archive，端点 `/v1/tunnels/{tunnel_id}/certificates`
+- ✅ 子模块指针与文档参考版本更新至 0.112.3
+- ✅ 新增 `wiremock` 集成测试，覆盖新资源核心路径、分页解析与 `anthropic-beta` 头注入（[tests/beta_resources_test.rs](../tests/beta_resources_test.rs)）
+
+### 开放结构自动兼容（无需改动）
+
+- ✅ `messages` / `beta.messages` 新增 `speed`（推理速度模式）参数（`0.112.0`）：经 `MessageCreateParams` 的 `#[serde(flatten)] extra` 透传
+- ✅ 无新增 SSE 流式事件类型，`src/internal/sse.rs` 事件白名单无需改动
+- ✅ `0.112.1` / `0.112.2` / `0.112.3` 主要为文档更新，无功能性代码改动
+
+### 延期（helper 生态）
+
+- 💤 `SessionToolRunner` 权限门控增强（上游 `0.112.0`）：归入阶段六「延期」的 helper 生态项，待 `session-tool-runner` 等 helper 在 Rust 落地时一并实现，避免空壳实现（不留技术债）

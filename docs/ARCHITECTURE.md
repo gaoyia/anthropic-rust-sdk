@@ -75,8 +75,8 @@ flowchart TB
 
 ## 版本
 
-- 上游 TypeScript SDK 参考版本：`0.110.0`（见 `anthropic-sdk-typescript/src/version.ts`）。
-- 本 crate 版本：`0.110.1`（见 [`Cargo.toml`](../Cargo.toml)）。
+- 上游 TypeScript SDK 参考版本：`0.112.3`（见 `anthropic-sdk-typescript/src/version.ts`）。
+- 本 crate 版本：`0.112.3`（见 [`Cargo.toml`](../Cargo.toml)）。
 
 ### 版本策略
 

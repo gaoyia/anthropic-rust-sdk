@@ -14,7 +14,7 @@ An AI-assisted synchronization of the [anthropic-sdk-typescript](https://github.
 
 ```toml
 [dependencies]
-anthropic-rust-sdk = "0.110"
+anthropic-rust-sdk = "0.112"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 
